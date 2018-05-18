@@ -1,0 +1,16 @@
+apicast scm-1|ef868e51efe32b68b9c4ba5eaa80d975e289e49e|development,test
+argparse 0.5.0-1||development,test
+inspect 3.1.1-0||development,test
+liquid 0.1.0-1||development,test
+ljsonschema 0.1.0-1||development,test
+lua-resty-env 0.4.0-1||development,test
+lua-resty-execvp 0.1.1-1||development,test
+lua-resty-http 0.12-0||development,test
+lua-resty-jwt 0.1.11-0||development,test
+lua-resty-repl 0.0.6-0|3878f41b7e8f97b1c96919db19dbee9496569dda|development,test
+lua-resty-url 0.2.0-1||development,test
+luafilesystem 1.7.0-2||development,test
+net-url 0.9-1||development,test
+nginx-lua-prometheus 0.20171117-4||development,test
+penlight 1.5.4-1||development,test
+router 2.1-0||development,test

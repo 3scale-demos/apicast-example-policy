@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: "apicast-example-policy"
+message: "APIcast Example Policy"
+objects:
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+    labels:
+      app: apicast
+    name: apicast-policy
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+    labels:
+      app: apicast
+    name: apicast-example-policy
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: apicast-policy:example
+    source:
+      git:
+        uri: https://github.com/3scale/apicast-example-policy.git
+        ref: 'master'
+      type: Git
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: 'amp-apicast:${AMP_RELEASE}'
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+    labels:
+      app: apicast
+    name: apicast-custom-policies
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'amp-apicast:latest'
+    postCommit:
+      args:
+        - '--test'
+        - '--lazy'
+      command:
+        - bin/apicast
+    resources: {}
+    runPolicy: Serial
+    source:
+      images:
+        - from:
+            kind: ImageStreamTag
+            name: 'apicast-policy:example'
+          paths:
+            # copy policy source code into the new image
+            - destinationDir: policies
+              sourcePath: /opt/app-root/policies/example
+            # copy also installed dependencies to the policy folder, so they are vendored
+            # - destinationDir: policies/example/0.1/resty/
+            #   sourcePath: /opt/app-root/src/lua_modules/share/lua/5.1/resty/iputils.lua
+      type: Dockerfile
+      dockerfile: |
+        FROM scratch
+        COPY . src
+
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: 'amp-apicast:${AMP_RELEASE}'
+      type: Docker
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+
+parameters:
+- name: AMP_RELEASE
+  required: true
+  description: AMP Version (eg. 2.2.0-GA)

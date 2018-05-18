@@ -1,0 +1,51 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: quay.io/3scale/s2i-openresty-centos7:1.13.6.1-rover7
+    working_directory: /opt/app-root/apicast
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - rover-{{ arch }}-{{ checksum "Roverfile.lock" }}
+            - global-{{ arch }}-{{ .Branch }}
+            - global-{{ arch }}-master
+      - run: rover install
+      - save_cache:
+          key: rover-{{ arch }}-{{ checksum "Roverfile.lock" }}
+          paths:
+            - lua_modules
+      - restore_cache:
+          keys:
+            - cpanm-{{ arch }}-{{ checksum "cpanfile" }}
+            - global-{{ arch }}-{{ .Branch }}
+            - global-{{ arch }}-master
+      - run:
+          command: cpanm --notest --installdeps ./
+          shell: /usr/libexec/s2i/entrypoint
+      - save_cache:
+          key: cpanm-{{ arch }}-{{ checksum "cpanfile" }}
+          paths:
+            - ~/perl5
+      - run:
+          shell: /usr/libexec/s2i/entrypoint
+          name: rover exec prove
+          command: |
+            mkdir -p tmp/junit
+            rover exec prove --harness=TAP::Harness::JUnit \
+              $(circleci tests glob "t/**/*.t" |  circleci tests split --split-by=timings --timings-type=filename)
+          environment:
+            JUNIT_OUTPUT_FILE: tmp/junit/prove.xml
+            TEST_NGINX_ERROR_LOG: tmp/prove.log
+            TEST_NGINX_BINARY: openresty
+      - save_cache:
+          key: global-{{ arch }}-{{ .Branch }}
+          paths:
+            - lua_modules
+            - ~/perl5
+      - store_artifacts:
+          path: tmp
+          destination: tmp
+      - store_test_results:
+          path: tmp/junit

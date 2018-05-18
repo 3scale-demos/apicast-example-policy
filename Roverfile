@@ -1,0 +1,9 @@
+luarocks {
+  group { 'development', 'test' } {
+    module { 'apicast' },
+    -- to be able to run repl as `require('resty.repl').start()`
+    module { 'lua-resty-repl' },
+    -- to automatically validate policy manifests
+    module { 'ljsonschema' },
+  }
+}
