@@ -84,7 +84,7 @@ objects:
       type: Docker
     triggers:
       - type: ConfigChange
-      - type: ImageChange
+     # - type: ImageChange
 
 parameters:
 - name: AMP_RELEASE
