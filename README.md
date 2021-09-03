@@ -17,6 +17,23 @@ The template creates new ImageStream for images containing this policy.
 Then it creates two BuildConfigs: one for building an image to apicast-policy ImageStream
 and second one for creating new APIcast image copying just necessary code from that previous image.
 
+### Starting the builds
+
+1. To start the first build run the following command:
+
+   ```shell
+   oc start-build apicast-example-policy --wait --follow
+   ```
+
+2. To start the second build run the following command:
+
+   ```shell
+   oc start-build apicast-custom-policies --wait --follow
+   ```
+
+If you didn't change the output image of the second build, you should see the APIcasts (staging and production) being redeployed.
+
+Once the redeploys finish the new policy appearing in the list of policies to add.
 
 # License
 
